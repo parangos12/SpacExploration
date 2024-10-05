@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${PROD_DB_URL}:5432/postgres
+    username: ${PROD_DB_USER}
+    password: ${PROD_DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+  sql:
+    init:
+      mode: never
+      continue-on-error: false
