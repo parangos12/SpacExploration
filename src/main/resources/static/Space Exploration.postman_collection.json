@@ -1,0 +1,18 @@
+{
+	"info": {
+		"_postman_id": "fd174d2d-780d-4536-bb21-335215fb077f",
+		"name": "Space Exploration",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "31645082"
+	},
+	"item": [
+		{
+			"name": "Add crew members",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}

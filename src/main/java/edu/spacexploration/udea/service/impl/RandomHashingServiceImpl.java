@@ -23,37 +23,16 @@ public class RandomHashingServiceImpl implements RandomHashingService {
 
   @Override
   public void saveMembers(
-      Integer explorationId, Integer spaceShipId, List<CrewMember> crewMembers) {
-    // 1. Get cabin_capacity and capacity for that spaceship_id from cache
-    Spaceship spaceship = spaceshipRepository.findById(spaceShipId).get();
-    Integer cabinCapacity = spaceship.getCabinCapacity();
-    Integer capacity = spaceship.getCapacity();
+      Integer explorationId, Integer spaceShipId, List<CrewMember> crewMembers) {}
 
-    // 2. Iterate all the crew members and assign them to the spaceship
-    for (CrewMember crewMember : crewMembers) {
-      ChainedHashTable chainedHashTable = new ChainedHashTable(capacity);
-      Integer familyId = crewMember.getFamilyId();
-      List<Integer> hashValues;
-      while (true) {
-        hashValues = chainedHashTable.add(familyId);
-        for (Integer cabinId : hashValues) {
-          List<Integer> crewMembersInCabin =
-              explorationRepository.findCrewMembersInCabin(explorationId, spaceShipId, cabinId);
-          if (insertCrewMember(
-              crewMember, crewMembersInCabin, cabinCapacity, spaceship, explorationId, cabinId)) {
-            break;
-          }
-          if(crewMember.getAge()<=18){
-            handleUnderageCrewMember(crewMember, crewMembersInCabin, cabinCapacity, spaceship, explorationId, cabinId);
-          }
-        }
-        hashValues=hashValues.stream().map(n->n+1).toList();
-      }
-    }
-    crewMemberRepository.saveAll(crewMembers);
-  }
+  private void handleUnderageCrewMember(
+      CrewMember crewMember,
+      List<Integer> crewMembersInCabin,
+      Integer cabinCapacity,
+      Spaceship spaceship,
+      Integer explorationId,
+      Integer cabinId) {
 
-  private void handleUnderageCrewMember(CrewMember crewMember, List<Integer> crewMembersInCabin, Integer cabinCapacity, Spaceship spaceship, Integer explorationId, Integer cabinId) {
   }
 
   private boolean insertCrewMember(
