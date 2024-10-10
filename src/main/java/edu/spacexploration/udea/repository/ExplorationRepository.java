@@ -12,4 +12,9 @@ public interface ExplorationRepository extends JpaRepository<Exploration, Intege
   @Query(
       "select ex.crewMember.id from exploration ex where ex.spaceship.id =:spaceShipId and ex.spaceship.exploration.id =:explorationId and ex.spaceship.cabin.id =:cabinId")
   List<Integer> findCrewMembersInCabin(Integer explorationId, Integer spaceShipId, Integer cabinId);
+
+    @Query(
+        "select ex.crewMember.id from exploration ex where ex.spaceship.id =:spaceShipId and ex.spaceship.exploration.id =:explorationId and ex.spaceship.cabin.id =:cabinId and ex.crewMember.age>=18")
+  List<Integer> findAdultCrewMembersInCabin(Integer explorationId, Integer spaceShipId, Integer cabinId);
+
 }
