@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class RandomHashingServiceImpl implements RandomHashingService {
 
+  public static final int MIN_AGE = 18;
   private final CrewMemberRepository crewMemberRepository;
   private final SpaceshipRepository spaceshipRepository;
   private final ExplorationRepository explorationRepository;
@@ -25,6 +26,7 @@ public class RandomHashingServiceImpl implements RandomHashingService {
   public void saveMembers(
       Integer explorationId, Integer spaceShipId, List<CrewMember> crewMembers) {
     // 1. Get cabin_capacity and capacity for that spaceship_id from cache
+    //TODO: Implement cache.
     Spaceship spaceship = spaceshipRepository.findById(spaceShipId).get();
     Integer cabinCapacity = spaceship.getCabinCapacity();
     Integer capacity = spaceship.getCapacity();
@@ -69,7 +71,7 @@ public class RandomHashingServiceImpl implements RandomHashingService {
       Integer cabinId) {
     // 1. Find one adult in the cabin to be relocated by crewMemberId
     CrewMember adultCrewMemberInCabin =
-        crewMemberRepository.findAdultCrewMembersInCabin(crewMembersInCabin);
+        crewMemberRepository.findFirstByAgeGreaterThanEqualAndIdIn(MIN_AGE,crewMembersInCabin).get(0);
     // 2. Insert underage crew member in the cabin
     insertCrewMember(
         crewMember, crewMembersInCabin, cabinCapacity - 1, spaceship, explorationId, cabinId);
