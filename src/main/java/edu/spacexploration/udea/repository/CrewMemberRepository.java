@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CrewMemberRepository extends JpaRepository<CrewMember, String> {
 
-  List<CrewMember> findFirstByAgeGreaterThanEqualAndIdIn(Integer age, List<Integer> crewMembersInCabin);
+  List<CrewMember> findFirstByAgeGreaterThanEqualAndIdIn(Integer age, List<String> crewMembersInCabin);
 
 }

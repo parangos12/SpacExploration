@@ -3,3 +3,5 @@ spring:
     name: spacexploration
   profiles:
     active: prod
+  cache:
+    cache-names: spacexploration

@@ -1,3 +1,10 @@
 package edu.spacexploration.udea.service;
 
-public interface SampleCountingService {}
+import edu.spacexploration.udea.entity.CrewMember;
+import java.util.List;
+
+public interface SampleCountingService {
+
+  List<CrewMember> findAll();
+
+}

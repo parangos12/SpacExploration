@@ -28,8 +28,8 @@ public class Exploration {
   @JoinColumn(name="spaceship_id")
   private Spaceship spaceship;
 
-  @ManyToOne
-  @JoinColumn(name="crew_member_id")
-  private CrewMember crewMember;
+//  @ManyToOne
+//  @JoinColumn(name="crew_member_id")
+//  private CrewMember crewMember;
 
 }

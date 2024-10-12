@@ -36,5 +36,11 @@ public class ChainedHashTable {
     return hashFunctions;
   }
 
+  public void incrementHashValues() {
+    for (int i = 0; i < hashFunctions.size(); i++) {
+      Function<String, Integer> hashFunction = hashFunctions.get(i);
+      hashFunctions.set(i, key -> hashFunction.apply(key.toString()) + 1 % size);
+    }
+  }
 
 }

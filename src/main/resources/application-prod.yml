@@ -4,6 +4,8 @@ spring:
     url: jdbc:postgresql://${PROD_DB_URL}:5432/postgres
     username: ${PROD_DB_USER}
     password: ${PROD_DB_PASSWORD}
+    minLimit: 5
+    maxLimit: 25
   jpa:
     hibernate:
       ddl-auto: none

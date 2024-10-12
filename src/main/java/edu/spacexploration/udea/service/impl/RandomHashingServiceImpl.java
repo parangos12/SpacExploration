@@ -26,7 +26,6 @@ public class RandomHashingServiceImpl implements RandomHashingService {
   public void saveMembers(
       Integer explorationId, Integer spaceShipId, List<CrewMember> crewMembers) {
     // 1. Get cabin_capacity and capacity for that spaceship_id from cache
-    //TODO: Implement cache.
     Spaceship spaceship = spaceshipRepository.findById(spaceShipId).get();
     Integer cabinCapacity = spaceship.getCabinCapacity();
     Integer capacity = spaceship.getCapacity();
@@ -36,57 +35,72 @@ public class RandomHashingServiceImpl implements RandomHashingService {
       ChainedHashTable chainedHashTable = new ChainedHashTable(capacity);
       Integer familyId = crewMember.getFamilyId();
       List<Integer> hashValues;
-      while (true) {
-        hashValues = chainedHashTable.add(familyId);
-        for (Integer cabinId : hashValues) {
-          List<Integer> crewMembersInCabin =
-              explorationRepository.findCrewMembersInCabin(explorationId, spaceShipId, cabinId);
-          if (insertCrewMember(
-              crewMember, crewMembersInCabin, cabinCapacity, spaceship, explorationId, cabinId)) {
-            break;
-          }
-          if (crewMember.getAge() < 18) {
-            crewMember =
-                handleUnderageCrewMember(
-                    crewMember,
-                    crewMembersInCabin,
-                    cabinCapacity,
-                    spaceship,
-                    explorationId,
-                    cabinId);
-          }
+      hashValues = chainedHashTable.add(familyId);
+      int counter = 0;
+      for (Integer cabinId : hashValues) {
+        List<String> crewMembersInCabin =
+            explorationRepository.findCrewMembersInCabin(explorationId, spaceShipId, cabinId);
+        if (insertCrewMember(
+            crewMember, crewMembersInCabin, cabinCapacity, spaceship, explorationId, cabinId)) {
+          break;
         }
-        hashValues = hashValues.stream().map(n -> n + 1).toList();
+        if (crewMember.getAge() < 18) {
+          crewMember =
+              handleUnderageCrewMember(
+                  crewMember, crewMembersInCabin, cabinCapacity, spaceship, explorationId, cabinId);
+        }
+        counter++;
+      }
+      if (counter == hashValues.size()) {
+        insertCrewMemberInAvailableCabin(
+            crewMember, explorationId, spaceShipId, cabinCapacity, spaceship);
       }
     }
-    crewMemberRepository.saveAll(crewMembers);
+  }
+
+  private void insertCrewMemberInAvailableCabin(
+      CrewMember crewMember,
+      Integer explorationId,
+      Integer spaceShipId,
+      Integer cabinCapacity,
+      Spaceship spaceship) {
+    Integer availableCabinId = explorationRepository.findAvailableCabin(explorationId, spaceShipId);
+    List<String> crewMembersInCabin =
+        explorationRepository.findCrewMembersInCabin(explorationId, spaceShipId, availableCabinId);
+    insertCrewMember(
+        crewMember, crewMembersInCabin, cabinCapacity, spaceship, explorationId, availableCabinId);
   }
 
   private CrewMember handleUnderageCrewMember(
       CrewMember crewMember,
-      List<Integer> crewMembersInCabin,
+      List<String> crewMembersInCabin,
       Integer cabinCapacity,
       Spaceship spaceship,
       Integer explorationId,
       Integer cabinId) {
     // 1. Find one adult in the cabin to be relocated by crewMemberId
     CrewMember adultCrewMemberInCabin =
-        crewMemberRepository.findFirstByAgeGreaterThanEqualAndIdIn(MIN_AGE,crewMembersInCabin).get(0);
+        crewMemberRepository
+            .findFirstByAgeGreaterThanEqualAndIdIn(MIN_AGE, crewMembersInCabin)
+            .get(0);
+    explorationRepository.deleteByExplorationIdAndSpaceShipIdAndCrewMemberId(
+        explorationId, spaceship.getId(), adultCrewMemberInCabin.getId());
+    crewMembersInCabin.remove(adultCrewMemberInCabin.getId());
     // 2. Insert underage crew member in the cabin
     insertCrewMember(
-        crewMember, crewMembersInCabin, cabinCapacity - 1, spaceship, explorationId, cabinId);
+        crewMember, crewMembersInCabin, cabinCapacity, spaceship, explorationId, cabinId);
     // 3. Return the adult crew member to be inserted in the cabin
     return adultCrewMemberInCabin;
   }
 
   private boolean insertCrewMember(
       CrewMember crewMember,
-      List<Integer> crewMembersInCabin,
+      List<String> crewMembersInCabin,
       Integer cabinCapacity,
       Spaceship spaceship,
       Integer explorationId,
       Integer cabinId) {
-    if (crewMembersInCabin.size() > cabinCapacity) {
+    if (crewMembersInCabin.size() >= cabinCapacity) {
       return false;
     }
     boolean newCrewMember = crewMemberRepository.findById(crewMember.getId()).isEmpty();
@@ -95,9 +109,14 @@ public class RandomHashingServiceImpl implements RandomHashingService {
     }
     Exploration explorationByCrewMember =
         Exploration.builder()
-            .crewMember(crewMember)
+            //            .crewMember(crewMember)
             .spaceship(spaceship)
-            .id(CrewMemberKey.builder().id(explorationId).cabinId(cabinId).build())
+            .id(
+                CrewMemberKey.builder()
+                    .id(explorationId)
+                    .cabinId(cabinId)
+                    .crewMember(crewMember)
+                    .build())
             .build();
     explorationRepository.save(explorationByCrewMember);
     return true;
